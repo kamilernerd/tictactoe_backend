@@ -1,8 +1,8 @@
 import express, {Request, Response, NextFunction} from 'express';
 import * as path from "path";
+import Match from './src/game';
 import * as WebSocket from 'ws';
-import { SocketMessage, SocketMessageType } from "./types/types";
-import { randomUUID } from "crypto";
+import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 
 (async () => {
   const app = express();
@@ -31,6 +31,8 @@ import { randomUUID } from "crypto";
     path: '/ws',
   });
 
+  const game = new Match();
+
   wss.on('connection', (ws) => {
     ws.on('message', (data) => {
       const body = JSON.parse(data as any) as SocketMessage;
@@ -46,7 +48,11 @@ import { randomUUID } from "crypto";
 	  // Read the lastest state of a game.
 	  break;
 	case SocketMessageType.CREATE:
-	  // Create a new game.
+	  const data = body.data && body.data
+
+	  game.createMatch(data); 
+
+	  ws.send(JSON.stringify(data));
 	  break;
 	case SocketMessageType.UPDATE:
 	  // Update existing game.
