@@ -2,20 +2,20 @@ import { IRecord, IInMemoryDB } from './types/types';
 
 class InMemoryDB<T extends IRecord> implements IInMemoryDB<T> {
 
-  private static instance: InMemoryDB<T> | null = null;
+  private static instance: any | null = null;
   
   private database: Record<string, T> = {};
 
   private constructor() {}
 
-  public static function getInstance(): InMemoryDB<T> {
+  public static getInstance() {
     if (InMemoryDB.instance === null) {
       InMemoryDB.instance = new InMemoryDB();
     }
     return InMemoryDB.instance;
   }
 
-  public function set(value: T): void {
+  public set(value: T): void {
     if (InMemoryDB.getInstance() === null) {
       return;
     }
@@ -23,7 +23,7 @@ class InMemoryDB<T extends IRecord> implements IInMemoryDB<T> {
     this.database[value.id] = value;
   }
 
-  public function get(id: string): T | undefined {
+  public get(id: string): T | undefined {
     if (InMemoryDB.getInstance() === null) {
       return;
     }
