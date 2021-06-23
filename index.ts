@@ -2,7 +2,7 @@ import express, {Request, Response, NextFunction} from 'express';
 import * as path from "path";
 import Match from './src/game';
 import * as WebSocket from 'ws';
-import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
+import { IBaseGameState, IJoinGame, ISocketMessage, SocketMessageType } from "./types/types";
 
 (async () => {
   const app = express();
@@ -39,21 +39,28 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 
   wss.on('connection', (ws) => {
     ws.on('message', (data) => {
-      const body = JSON.parse(data.toString()) as SocketMessage;
+      const body = JSON.parse(data.toString()) as ISocketMessage;
 
       switch (body.type) {
 	case SocketMessageType.JOIN:
-	  // Add player to existing game.
-	    ws.send(JSON.stringify({
-	      "gameId": "hei"
-	    }));
+	  const joinData = body && body.data;
+
+	  console.log("join data,", joinData);
+
+	  const matchData = game.joinMatch(joinData!!);
+
+	  if (!matchData) {
+	    break;
+	  }
+
+	  ws.send(JSON.stringify(matchData));
 	  break;
 	case SocketMessageType.READ:
 	  // Read the lastest state of a game.
 	  break;
 	case SocketMessageType.CREATE:
-	  const data = body.data && body.data
-	  const match = game.createMatch(data);
+	  const createData = body.data && body.data
+	  const match = game.createMatch(createData);
 
 	  if (!match) {
 	    break;
