@@ -33,6 +33,10 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 
   const game = new Match();
 
+  app.use('/db', (req: Request, res: Response, next: NextFunction) => {
+    return res.status(200).json(game.db);
+  });
+
   wss.on('connection', (ws) => {
     ws.on('message', (data) => {
       const body = JSON.parse(data.toString()) as SocketMessage;
@@ -52,7 +56,7 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 	  const match = game.createMatch(data);
 
 	  if (!match) {
-	  
+	    break;
 	  }
 
 	  ws.send(JSON.stringify(match));

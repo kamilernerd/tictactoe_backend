@@ -3,7 +3,7 @@ import { GamePlayers, BoardState, GameState } from '../types/types';
 
 export default class Match {
 
-  db: InMemoryDB<GameState> | null = null;
+  public db: InMemoryDB<GameState> | null = null;
 
   constructor() {
     this.db = InMemoryDB.getInstance();
