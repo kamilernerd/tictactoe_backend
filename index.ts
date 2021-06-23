@@ -35,7 +35,7 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 
   wss.on('connection', (ws) => {
     ws.on('message', (data) => {
-      const body = JSON.parse(data as any) as SocketMessage;
+      const body = JSON.parse(data.toString()) as SocketMessage;
 
       switch (body.type) {
 	case SocketMessageType.JOIN:
@@ -49,10 +49,13 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
 	  break;
 	case SocketMessageType.CREATE:
 	  const data = body.data && body.data
+	  const match = game.createMatch(data);
 
-	  game.createMatch(data); 
+	  if (!match) {
+	  
+	  }
 
-	  ws.send(JSON.stringify(data));
+	  ws.send(JSON.stringify(match));
 	  break;
 	case SocketMessageType.UPDATE:
 	  // Update existing game.
@@ -68,5 +71,4 @@ import { BaseGameState, SocketMessage, SocketMessageType } from "./types/types";
       wss.emit('connection', socket, request);
     });
   });
-
 })();

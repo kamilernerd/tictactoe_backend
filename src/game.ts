@@ -1,4 +1,4 @@
-import InMemoryDB from 'InMemoryDB';
+import InMemoryDB from '../InMemoryDB';
 import { GamePlayers, BoardState, GameState } from '../types/types';
 
 export default class Match {
@@ -9,19 +9,17 @@ export default class Match {
     this.db = InMemoryDB.getInstance();
   }
   
-  private function createMatchKey(): string {
+  private createMatchKey(): string {
     return (Math.random() + 1).toString(36).substring(7);
   };
 
-  public function joinMatch(data: GameState) {
+  public joinMatch(data: GameState): void {
   }
 
-  public function createMatch(data) {
+  public createMatch(data): GameState | undefined {
     if (this.db === null) {
-      return false;
+      return;
     }
-
-    console.log("create match", data);
 
     const key = this.createMatchKey();
 
@@ -30,13 +28,13 @@ export default class Match {
       ...data
     });
 
-    console.log(this.db.get(key));
+    return this.db.get(key);
   }
 
-  public function updateMatch(data: GameState) {
+  public updateMatch(data: GameState): void {
   }
 
-  public function pollMatch(gameKey: string) {
+  public pollMatch(gameKey: string): void {
   }
 
 }
