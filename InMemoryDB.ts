@@ -1,9 +1,8 @@
 import { IRecord, IInMemoryDB } from './types/types';
 
 class InMemoryDB<T extends IRecord> implements IInMemoryDB<T> {
-
   private static instance: any | null = null;
-  
+
   private database: Record<string, T> = {};
 
   private constructor() {}
@@ -19,7 +18,7 @@ class InMemoryDB<T extends IRecord> implements IInMemoryDB<T> {
     if (InMemoryDB.getInstance() === null) {
       return;
     }
-    
+
     this.database[value.id] = value;
   }
 
