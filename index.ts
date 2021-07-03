@@ -1,9 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import * as path from 'path';
 import Match from './src/game';
-import * as WebSocket from 'ws';
+import WebSocket from 'ws';
 import {
   IBaseGameState,
+  IGameState,
   IJoinGame,
   ISocketMessage,
   SocketMessageType,
@@ -50,7 +51,7 @@ import {
 
           console.log('join data,', joinData);
 
-          const matchData = game.joinMatch(joinData as IJoinGame);
+          const matchData = game.joinMatch(joinData as IJoinGame, ws);
 
           if (!matchData) {
             break;
@@ -63,16 +64,26 @@ import {
           break;
         case SocketMessageType.CREATE:
           const createData = body.data && body.data;
-          const match = game.createMatch(createData as IBaseGameState);
+          const createMatcData = game.createMatch(
+            createData as IBaseGameState,
+            ws
+          );
 
-          if (!match) {
+          if (!createMatcData) {
             break;
           }
 
-          ws.send(JSON.stringify(match));
+          ws.send(JSON.stringify(createMatcData));
           break;
         case SocketMessageType.UPDATE:
-          // Update existing game.
+          const updateData = body.data && body.data;
+          const updateMatchData = game.updateMatch(updateData as IGameState);
+
+          if (!updateMatchData) {
+            break;
+          }
+
+          ws.send(JSON.stringify(updateMatchData));
           break;
         default:
           break;

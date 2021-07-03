@@ -1,11 +1,6 @@
 import InMemoryDB from '../InMemoryDB';
-import {
-  GamePlayers,
-  BoardState,
-  IGameState,
-  IJoinGame,
-  IBaseGameState,
-} from '../types/types';
+import { IBaseGameState, IGameState, IJoinGame } from '../types/types';
+import WebSocket from 'ws';
 
 export default class Match {
   public db: InMemoryDB<IGameState> | null = null;
@@ -18,7 +13,10 @@ export default class Match {
     return (Math.random() + 1).toString(36).substring(7);
   }
 
-  public joinMatch(data: IJoinGame): IGameState | undefined {
+  public joinMatch(
+    data: IJoinGame,
+    ws: WebSocket
+  ): Omit<IGameState, 'connections'> | undefined {
     if (!data) {
       return;
     }
@@ -29,21 +27,31 @@ export default class Match {
       return;
     }
 
-    // Max 2 players per match
-    if (currentGame.players.length === 2) {
+    // Can't join game, p1 missing. Remove game.
+    if (
+      currentGame.players.p1 === null ||
+      (currentGame.connections && currentGame.connections.p1 === null)
+    ) {
+      // delete game
       return;
     }
 
-    currentGame.players.push(data.player[0]);
-
-    console.error('CURRENT MATCH', currentGame);
+    currentGame.players.p2 = data.player;
+    currentGame.connections!!.p2 = ws;
 
     this.db && this.db.set(currentGame);
 
-    return currentGame;
+    return {
+      id: currentGame.id,
+      players: currentGame.players,
+      state: currentGame.state,
+    };
   }
 
-  public createMatch(data: IBaseGameState): IGameState | undefined {
+  public createMatch(
+    data: IBaseGameState,
+    ws: WebSocket
+  ): IGameState | undefined {
     if (this.db === null) {
       return;
     }
@@ -52,14 +60,37 @@ export default class Match {
 
     this.db.set({
       id: key,
-      players: [data.player[0]],
+      players: {
+        p1: data.player,
+        p2: null,
+      },
+      connections: {
+        p1: ws,
+        p2: null,
+      },
       state: data.state,
     });
 
-    return this.db.get(key);
+    const updatedState = this.db.get(key);
+
+    return {
+      id: updatedState!!.id,
+      players: updatedState!!.players,
+      state: updatedState!!.state,
+    };
   }
 
-  public updateMatch(data: IGameState): void {}
+  public updateMatch(data: IGameState): IGameState | undefined {
+    if (!data) {
+      return;
+    }
+
+    this.db &&
+      this.db.set({
+        ...data,
+      });
+    return data;
+  }
 
   public pollMatch(gameKey: string): void {}
 }
